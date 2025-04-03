@@ -5,17 +5,18 @@
 name: Build and deploy Python app to Azure Web App - livefiapon
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
+  pull_request:
+    types:
+      - closed
+  
 jobs:
   build:
+    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
+    permissions:
+      contents: read # Required for actions/checkout
+      
     steps:
       - uses: actions/checkout@v4
 
@@ -46,8 +47,10 @@ jobs:
             !venv/
 
   deploy:
+    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
     runs-on: ubuntu-latest
     needs: build
+    
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
